@@ -38,7 +38,7 @@
 ## 目录结构
 
 ```text
-campus_glimmer/
+school-change/
 ├─ accounts/           # 用户与个人资料模块
 ├─ campus_glimmer/     # Django 项目配置
 ├─ chat_messages/      # 评论与私信模块
@@ -56,8 +56,8 @@ campus_glimmer/
 1. 克隆仓库并进入项目目录
 
 ```bash
-git clone https://github.com/kuku-1019/campus_glimmer-main.git
-cd campus_glimmer-main
+git clone https://github.com/kuku-1019/school-change.git
+cd school-change
 ```
 
 2. 创建并激活虚拟环境
