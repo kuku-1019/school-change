@@ -1,0 +1,161 @@
+{% extends 'base.html' %}
+
+{% block title %}与 {{ other_user.username }} 的对话 - 拾光校园{% endblock %}
+
+{% block content %}
+<div class="container py-4" style="min-height: 80vh;">
+    <div class="row g-4">
+        <div class="col-md-4 col-lg-3">
+            <a href="{% url 'inbox' %}" class="btn btn-outline-secondary w-100 mb-3 rounded-pill">
+                <i class="bi bi-arrow-left me-1"></i> 返回消息列表
+            </a>
+
+            <div class="card shadow-sm border-0 text-center p-3">
+                <div class="card-body">
+                    <img src="{{ other_user.profile.avatar.url }}" alt="{{ other_user.username }}" class="rounded-circle mb-3 border p-1" style="width: 100px; height: 100px; object-fit: cover;">
+                    <h5 class="fw-bold">{{ other_user.username }}</h5>
+                    <p class="text-muted small mb-3">上次活跃: 近期</p>
+
+                    <hr class="my-3 opacity-25">
+
+                    <div class="text-start small">
+                        {% if other_user.profile.bio %}
+                        <div class="mb-2">
+                            <span class="fw-bold text-dark">简介:</span>
+                            <span class="text-muted">{{ other_user.profile.bio|truncatechars:50 }}</span>
+                        </div>
+                        {% endif %}
+
+                        {% if other_user.profile.wechat %}
+                        <div class="mb-2">
+                            <span class="fw-bold text-success"><i class="bi bi-wechat me-1"></i>微信:</span>
+                            <span class="text-dark">{{ other_user.profile.wechat }}</span>
+                        </div>
+                        {% endif %}
+
+                        {% if other_user.profile.phone %}
+                        <div>
+                            <span class="fw-bold text-primary"><i class="bi bi-phone me-1"></i>电话:</span>
+                            <span class="text-dark">{{ other_user.profile.phone }}</span>
+                        </div>
+                        {% endif %}
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-md-8 col-lg-9">
+            <div class="card shadow-sm border-0 h-100">
+                <div class="card-header bg-white py-3 border-bottom d-flex justify-content-between align-items-center">
+                    <h5 class="mb-0 fw-bold">
+                        与 <span class="text-success">{{ other_user.username }}</span> 的对话
+                    </h5>
+                    <span class="badge bg-light text-secondary border">共 {{ messages_list|length }} 条消息</span>
+                </div>
+
+                <div class="card-body p-0 d-flex flex-column" style="height: 600px;">
+                    <div class="chat-messages flex-grow-1 p-4 overflow-auto bg-light" id="chatContainer">
+                        {% for message in messages_list %}
+                            <div class="d-flex mb-3 {% if message.sender == request.user %}justify-content-end{% else %}justify-content-start{% endif %}">
+
+                                {% if message.sender != request.user %}
+                                <img src="{{ message.sender.profile.avatar.url }}" class="rounded-circle me-2 align-self-end" style="width: 36px; height: 36px; object-fit: cover;">
+                                {% endif %}
+
+                                <div class="message-bubble shadow-sm p-3 {% if message.sender == request.user %}bg-success text-white rounded-start-top{% else %}bg-white text-dark rounded-end-top{% endif %}" style="max-width: 75%; border-radius: 15px; position: relative;">
+
+                                    <div class="message-text" style="word-break: break-word;">
+                                        {{ message.content }}
+                                    </div>
+
+                                    {% if message.item %}
+                                    <div class="card mt-2 border-0 overflow-hidden {% if message.sender == request.user %}bg-success-dark{% else %}bg-light{% endif %}" style="max-width: 200px;">
+                                        <div class="d-flex p-2 align-items-center">
+                                            {% if message.item.images.first %}
+                                            <img src="{{ message.item.images.first.image.url }}" class="rounded me-2" style="width: 40px; height: 40px; object-fit: cover;">
+                                            {% endif %}
+                                            <div class="overflow-hidden">
+                                                <div class="small fw-bold text-truncate">{{ message.item.title }}</div>
+                                                <a href="{% url 'item_detail' message.item.id %}" class="stretched-link text-decoration-none small {% if message.sender == request.user %}text-white-50{% else %}text-muted{% endif %}">查看详情</a>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    {% endif %}
+
+                                    <div class="text-end mt-1" style="font-size: 0.65rem; opacity: 0.7;">
+                                        {{ message.created_at|date:"H:i" }}
+                                    </div>
+                                </div>
+
+                                {% if message.sender == request.user %}
+                                <img src="{{ message.sender.profile.avatar.url }}" class="rounded-circle ms-2 align-self-end" style="width: 36px; height: 36px; object-fit: cover;">
+                                {% endif %}
+                            </div>
+                        {% empty %}
+                            <div class="text-center py-5">
+                                <p class="text-muted">还没有消息，打个招呼吧！👋</p>
+                            </div>
+                        {% endfor %}
+                    </div>
+
+                    <div class="card-footer bg-white border-top p-3">
+                        <form method="POST" class="d-flex align-items-center">
+                            {% csrf_token %}
+                            <div class="flex-grow-1 me-2">
+                                <input type="text" name="content" class="form-control rounded-pill bg-light border-0 py-2 px-3" placeholder="输入消息..." required autocomplete="off">
+                            </div>
+                            <button type="submit" class="btn btn-success rounded-circle d-flex align-items-center justify-content-center shadow-sm" style="width: 42px; height: 42px;">
+                                <i class="bi bi-send-fill"></i>
+                            </button>
+                        </form>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<style>
+    /* 定义一些自定义辅助样式 */
+    .rounded-start-top {
+        border-top-left-radius: 15px;
+        border-top-right-radius: 0;
+        border-bottom-left-radius: 15px;
+        border-bottom-right-radius: 15px;
+    }
+    .rounded-end-top {
+        border-top-left-radius: 0;
+        border-top-right-radius: 15px;
+        border-bottom-left-radius: 15px;
+        border-bottom-right-radius: 15px;
+    }
+    .bg-success-dark {
+        background-color: rgba(0, 0, 0, 0.1);
+    }
+
+    /* 滚动条美化 (Webkit) */
+    .chat-messages::-webkit-scrollbar {
+        width: 6px;
+    }
+    .chat-messages::-webkit-scrollbar-track {
+        background: #f1f1f1;
+    }
+    .chat-messages::-webkit-scrollbar-thumb {
+        background: #ccc;
+        border-radius: 3px;
+    }
+</style>
+
+{% block extra_js %}
+<script>
+    // 页面加载完成后，自动滚动到聊天记录最底部
+    document.addEventListener('DOMContentLoaded', function() {
+        var chatContainer = document.getElementById('chatContainer');
+        if (chatContainer) {
+            chatContainer.scrollTop = chatContainer.scrollHeight;
+        }
+    });
+</script>
+{% endblock %}
+
+{% endblock %}

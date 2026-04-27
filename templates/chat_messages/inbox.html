@@ -1,0 +1,160 @@
+{% extends 'base.html' %}
+
+{% block title %}消息中心 - 拾光校园{% endblock %}
+
+{% block content %}
+<div class="container py-4" style="min-height: 80vh;">
+    <div class="row">
+        <div class="col-lg-4 col-md-5 mb-4">
+            <div class="card shadow-sm border-0 h-100">
+                <div class="card-header bg-white border-bottom py-3">
+                    <h5 class="mb-0 fw-bold text-success"><i class="bi bi-chat-dots me-2"></i>我的对话</h5>
+                </div>
+                <div class="list-group list-group-flush overflow-auto" style="max-height: 600px;">
+                    {% for data in conversation_data %}
+                    <a href="{% url 'conversation' data.user.id %}" class="list-group-item list-group-item-action border-0 py-3 d-flex align-items-center {% if data.unread_count > 0 %}bg-light{% endif %}">
+                        <div class="position-relative">
+                            <img src="{{ data.user.profile.avatar.url }}" alt="{{ data.user.username }}" class="rounded-circle" style="width: 50px; height: 50px; object-fit: cover;">
+                            {% if data.unread_count > 0 %}
+                            <span class="position-absolute top-0 start-100 translate-middle badge rounded-pill bg-danger border border-light">
+                                {{ data.unread_count }}
+                            </span>
+                            {% endif %}
+                        </div>
+
+                        <div class="ms-3 flex-grow-1 overflow-hidden">
+                            <div class="d-flex justify-content-between align-items-baseline mb-1">
+                                <h6 class="mb-0 text-dark fw-bold text-truncate">{{ data.user.username }}</h6>
+                                <small class="text-muted ms-2" style="font-size: 0.75rem;">
+                                    {% if data.last_message %}
+                                    {{ data.last_message.created_at|date:"m-d H:i" }}
+                                    {% endif %}
+                                </small>
+                            </div>
+                            <p class="text-muted small mb-0 text-truncate">
+                                {% if data.last_message %}
+                                    {{ data.last_message.content }}
+                                {% else %}
+                                    暂无消息
+                                {% endif %}
+                            </p>
+                        </div>
+                    </a>
+                    {% empty %}
+                    <div class="text-center py-5">
+                        <i class="bi bi-chat-square text-muted display-6"></i>
+                        <p class="text-muted mt-3">暂无对话记录</p>
+                    </div>
+                    {% endfor %}
+                </div>
+            </div>
+        </div>
+
+        <div class="col-lg-8 col-md-7">
+            <div class="card shadow-sm border-0 h-100">
+                <div class="card-header bg-white border-bottom py-0">
+                    <ul class="nav nav-tabs card-header-tabs border-0" id="messagesTabs" role="tablist">
+                        <li class="nav-item">
+                            <button class="nav-link active border-0 py-3 fw-bold text-success" id="received-tab" data-bs-toggle="tab" data-bs-target="#received">
+                                <i class="bi bi-inbox me-1"></i> 收到的消息
+                            </button>
+                        </li>
+                        <li class="nav-item">
+                            <button class="nav-link border-0 py-3 fw-bold text-secondary" id="sent-tab" data-bs-toggle="tab" data-bs-target="#sent">
+                                <i class="bi bi-send me-1"></i> 发出的消息
+                            </button>
+                        </li>
+                    </ul>
+                </div>
+
+                <div class="card-body p-0">
+                    <div class="tab-content" id="messagesTabContent">
+                        <div class="tab-pane fade show active" id="received">
+                            <div class="list-group list-group-flush">
+                                {% for message in received_messages %}
+                                <div class="list-group-item border-0 border-bottom py-3">
+                                    <div class="d-flex">
+                                        <img src="{{ message.sender.profile.avatar.url }}" class="rounded-circle me-3" style="width: 40px; height: 40px; object-fit: cover;">
+                                        <div class="flex-grow-1">
+                                            <div class="d-flex justify-content-between">
+                                                <h6 class="mb-1 fw-bold">{{ message.sender.username }}</h6>
+                                                <small class="text-muted">{{ message.created_at|date:"Y-m-d H:i" }}</small>
+                                            </div>
+                                            <p class="mb-1 text-dark">{{ message.content }}</p>
+
+                                            {% if message.item %}
+                                            <div class="bg-light p-2 rounded mt-2 border d-inline-block">
+                                                <small class="text-muted">
+                                                    <i class="bi bi-bag me-1"></i>关联商品:
+                                                    <a href="{% url 'item_detail' message.item.id %}" class="text-decoration-none text-success fw-bold">{{ message.item.title }}</a>
+                                                </small>
+                                            </div>
+                                            {% endif %}
+
+                                            <div class="mt-2">
+                                                <a href="{% url 'conversation' message.sender.id %}" class="btn btn-sm btn-outline-success rounded-pill px-3">
+                                                    <i class="bi bi-reply me-1"></i>回复
+                                                </a>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                                {% empty %}
+                                <div class="text-center py-5 text-muted">暂无收到的消息</div>
+                                {% endfor %}
+                            </div>
+                        </div>
+
+                        <div class="tab-pane fade" id="sent">
+                            <div class="list-group list-group-flush">
+                                {% for message in sent_messages %}
+                                <div class="list-group-item border-0 border-bottom py-3">
+                                    <div class="d-flex">
+                                        <img src="{{ message.receiver.profile.avatar.url }}" class="rounded-circle me-3" style="width: 40px; height: 40px; object-fit: cover;">
+                                        <div class="flex-grow-1">
+                                            <div class="d-flex justify-content-between">
+                                                <h6 class="mb-1">发给: <span class="fw-bold">{{ message.receiver.username }}</span></h6>
+                                                <small class="text-muted">{{ message.created_at|date:"Y-m-d H:i" }}</small>
+                                            </div>
+                                            <p class="mb-1 text-muted">{{ message.content }}</p>
+
+                                            {% if message.item %}
+                                            <div class="bg-light p-2 rounded mt-2 border d-inline-block">
+                                                <small class="text-muted">关联商品: {{ message.item.title }}</small>
+                                            </div>
+                                            {% endif %}
+
+                                            <div class="mt-2">
+                                                <a href="{% url 'conversation' message.receiver.id %}" class="btn btn-sm btn-light text-secondary rounded-pill px-3">
+                                                    查看对话
+                                                </a>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                                {% empty %}
+                                <div class="text-center py-5 text-muted">暂无发出的消息</div>
+                                {% endfor %}
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<style>
+    /* 简单的标签页选中样式优化 */
+    .nav-link.active {
+        background-color: transparent !important;
+        border-bottom: 2px solid #198754 !important;
+    }
+    .nav-link {
+        color: #6c757d;
+    }
+    .nav-link:hover {
+        color: #198754;
+    }
+</style>
+{% endblock %}

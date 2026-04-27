@@ -1,0 +1,4 @@
+Django==4.2.24
+django-simpleui==2026.1.13
+Pillow==9.5.0
+locust==2.25.0

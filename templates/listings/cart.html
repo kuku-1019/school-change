@@ -1,0 +1,132 @@
+{% extends 'base.html' %}
+
+{% block title %}我的购物车 - 拾光校园{% endblock %}
+
+{% block content %}
+<div class="container">
+    <h2 class="mb-4 fw-bold">我的购物车</h2>
+
+    {% if cart_items %}
+    <form action="{% url 'checkout' %}" method="POST" id="cartForm">
+        {% csrf_token %}
+        <div class="card shadow-sm border-0 rounded-3">
+            <div class="card-body p-0">
+                <table class="table table-hover align-middle mb-0">
+                    <thead class="bg-light">
+                        <tr>
+                            <th class="ps-4" style="width: 5%;">
+                                <input type="checkbox" class="form-check-input" id="selectAll" checked>
+                            </th>
+                            <th style="width: 15%;">商品图片</th>
+                            <th style="width: 40%;">商品名称</th>
+                            <th style="width: 15%;">价格</th>
+                            <th style="width: 15%;">操作</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for cart_item in cart_items %}
+                        <tr>
+                            <td class="ps-4">
+                                <input type="checkbox" name="selected_items" value="{{ cart_item.id }}"
+                                       class="form-check-input item-checkbox"
+                                       data-price="{{ cart_item.item.price }}" checked>
+                            </td>
+                            <td>
+                                {% if cart_item.item.images.first %}
+                                <img src="{{ cart_item.item.images.first.image.url }}" class="rounded" style="width: 60px; height: 60px; object-fit: cover;">
+                                {% else %}
+                                <div class="bg-secondary rounded" style="width: 60px; height: 60px;"></div>
+                                {% endif %}
+                            </td>
+                            <td>
+                                <a href="{% url 'item_detail' cart_item.item.id %}" class="text-decoration-none text-dark fw-bold">
+                                    {{ cart_item.item.title }}
+                                </a>
+                                <div class="small text-muted text-truncate">{{ cart_item.item.description|truncatechars:30 }}</div>
+                            </td>
+                            <td class="text-danger fw-bold">¥{{ cart_item.item.price }}</td>
+                            <td>
+                                <a href="{% url 'remove_from_cart' cart_item.item.id %}" class="btn btn-sm btn-outline-danger">
+                                    <i class="bi bi-trash"></i> 移除
+                                </a>
+                            </td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+
+            <div class="card-footer bg-white p-4 d-flex justify-content-between align-items-center">
+                <div>
+                    <span class="text-muted">已选商品 <span id="selectedCount" class="fw-bold text-dark">{{ cart_items.count }}</span> 件</span>
+                </div>
+                <div class="d-flex align-items-center gap-3">
+                    <div class="text-end">
+                        <div class="small text-muted">合计:</div>
+                        <h3 class="text-danger fw-bold m-0">¥<span id="totalPrice">{{ total_price }}</span></h3>
+                    </div>
+                    <button type="submit" class="btn btn-danger btn-lg px-5 rounded-pill fw-bold">
+                        去结算
+                    </button>
+                </div>
+            </div>
+        </div>
+    </form>
+    {% else %}
+    <div class="text-center py-5">
+        <i class="bi bi-cart-x display-1 text-muted opacity-50"></i>
+        <p class="mt-3 text-muted">购物车空空如也</p>
+        <a href="{% url 'item_list' %}" class="btn btn-success rounded-pill px-4 mt-2">去逛逛</a>
+    </div>
+    {% endif %}
+</div>
+
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        const checkboxes = document.querySelectorAll('.item-checkbox');
+        const selectAllBtn = document.getElementById('selectAll');
+        const totalPriceEl = document.getElementById('totalPrice');
+        const selectedCountEl = document.getElementById('selectedCount');
+
+        function updateSummary() {
+            let total = 0;
+            let count = 0;
+
+            checkboxes.forEach(cb => {
+                if (cb.checked) {
+                    total += parseFloat(cb.getAttribute('data-price'));
+                    count++;
+                }
+            });
+
+            totalPriceEl.textContent = total.toFixed(2);
+            selectedCountEl.textContent = count;
+        }
+
+        // 全选/取消全选
+        if(selectAllBtn) {
+            selectAllBtn.addEventListener('change', function() {
+                checkboxes.forEach(cb => {
+                    cb.checked = this.checked;
+                });
+                updateSummary();
+            });
+        }
+
+        // 单个勾选变化
+        checkboxes.forEach(cb => {
+            cb.addEventListener('change', function() {
+                // 如果有一个没选中，全选框就取消选中
+                if (!this.checked) {
+                    if(selectAllBtn) selectAllBtn.checked = false;
+                }
+                // 如果所有都选中了，全选框自动选中
+                if (document.querySelectorAll('.item-checkbox:checked').length === checkboxes.length) {
+                    if(selectAllBtn) selectAllBtn.checked = true;
+                }
+                updateSummary();
+            });
+        });
+    });
+</script>
+{% endblock %}

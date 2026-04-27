@@ -1,0 +1,107 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}个人中心 - 拾光校园{% endblock %}
+
+{% block content %}
+<div class="container py-4">
+    <div class="card border-0 shadow-sm rounded-3 overflow-hidden mb-4">
+        <div class="bg-success bg-gradient" style="height: 150px; opacity: 0.8;"></div>
+
+        <div class="card-body position-relative pt-0 px-4 pb-4">
+            <div class="row align-items-end">
+                <div class="col-auto">
+                    <div class="position-relative" style="margin-top: -60px;">
+                        {% if user.profile.avatar %}
+                        <img src="{{ user.profile.avatar.url }}" class="rounded-circle border border-4 border-white shadow" style="width: 120px; height: 120px; object-fit: cover;">
+                        {% else %}
+                        <img src="{% static 'img/default-avatar.png' %}" class="rounded-circle border border-4 border-white shadow" style="width: 120px; height: 120px; object-fit: cover;">
+                        {% endif %}
+                    </div>
+                </div>
+                <div class="col md-mb-3">
+                    <h3 class="fw-bold mb-1 mt-3 mt-md-0">{{ user.username }}</h3>
+                    <p class="text-muted mb-0 small"><i class="bi bi-envelope me-1"></i>{{ user.email }}</p>
+                </div>
+                <div class="col-12 col-md-auto mt-3 mt-md-0">
+                    <a href="{% url 'edit_profile' %}" class="btn btn-outline-success rounded-pill px-4">
+                        <i class="bi bi-pencil-square me-1"></i> 编辑资料
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="row g-4">
+        <div class="col-md-4">
+            <div class="card border-0 shadow-sm rounded-3 h-100">
+                <div class="card-header bg-white border-0 py-3">
+                    <h6 class="fw-bold mb-0"><i class="bi bi-person-lines-fill me-2 text-success"></i>联系信息</h6>
+                </div>
+                <div class="card-body pt-0">
+                    <ul class="list-group list-group-flush">
+                        <li class="list-group-item px-0 border-0 d-flex justify-content-between align-items-center">
+                            <span class="text-muted small">学号</span>
+                            <span class="fw-bold text-dark">{{ user.profile.student_id|default:"未填写" }}</span>
+                        </li>
+                        <li class="list-group-item px-0 border-0 d-flex justify-content-between align-items-center">
+                            <span class="text-muted small">微信号</span>
+                            <span class="fw-bold text-dark">{{ user.profile.wechat|default:"未填写" }}</span>
+                        </li>
+                        <li class="list-group-item px-0 border-0 d-flex justify-content-between align-items-center">
+                            <span class="text-muted small">手机号</span>
+                            <span class="fw-bold text-dark">{{ user.profile.phone|default:"未填写" }}</span>
+                        </li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-md-8">
+            <div class="row g-3 mb-4">
+                <div class="col-6">
+                    <a href="{% url 'my_items' %}" class="text-decoration-none">
+                        <div class="card border-0 shadow-sm bg-success bg-opacity-10 h-100 hover-scale">
+                            <div class="card-body text-center py-4">
+                                <h2 class="fw-bold text-success mb-0">{{ user.item_set.count }}</h2>
+                                <small class="text-success text-opacity-75">发布商品</small>
+                            </div>
+                        </div>
+                    </a>
+                </div>
+                <div class="col-6">
+                    <a href="{% url 'inbox' %}" class="text-decoration-none">
+                        <div class="card border-0 shadow-sm bg-primary bg-opacity-10 h-100 hover-scale">
+                            <div class="card-body text-center py-4">
+                                <h2 class="fw-bold text-primary mb-0">{{ unread_messages_count|default:"0" }}</h2>
+                                <small class="text-primary text-opacity-75">未读消息</small>
+                            </div>
+                        </div>
+                    </a>
+                </div>
+            </div>
+
+            <div class="card border-0 shadow-sm rounded-3">
+                <div class="card-header bg-white border-0 py-3">
+                    <h6 class="fw-bold mb-0"><i class="bi bi-text-paragraph me-2 text-success"></i>关于我</h6>
+                </div>
+                <div class="card-body pt-0">
+                    {% if user.profile.bio %}
+                        <p class="text-secondary lh-lg">{{ user.profile.bio }}</p>
+                    {% else %}
+                        <div class="text-center py-4 text-muted bg-light rounded-3">
+                            <i class="bi bi-emoji-smile fs-4 mb-2 d-block"></i>
+                            这个同学很懒，还没有写个人简介~
+                        </div>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<style>
+    .hover-scale { transition: transform 0.2s; }
+    .hover-scale:hover { transform: translateY(-3px); }
+</style>
+{% endblock %}

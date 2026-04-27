@@ -1,0 +1,108 @@
+{% extends 'base.html' %}
+
+{% block title %}与 {{ receiver.username }} 的对话 - 拾光校园{% endblock %}
+
+{% block content %}
+<div class="row justify-content-center">
+    <div class="col-md-8">
+        <div class="card shadow border-0 rounded-3">
+            <div class="card-header bg-white border-bottom py-3 d-flex justify-content-between align-items-center">
+                <h5 class="mb-0 fw-bold text-dark">
+                    <i class="bi bi-chat-dots-fill text-success me-2"></i>与 {{ receiver.username }} 的对话
+                </h5>
+                <a href="{% url 'seller_shop' receiver.id %}" class="btn btn-sm btn-outline-secondary rounded-pill">
+                    查看TA的店铺
+                </a>
+            </div>
+
+            <div class="card-body p-0">
+                {% if item %}
+                <div class="bg-light p-3 border-bottom d-flex align-items-center">
+                    {% if item.images.first %}
+                    <img src="{{ item.images.first.image.url }}" class="rounded shadow-sm" style="width: 50px; height: 50px; object-fit: cover;">
+                    {% else %}
+                    <div class="bg-secondary rounded shadow-sm" style="width: 50px; height: 50px;"></div>
+                    {% endif %}
+                    <div class="ms-3 flex-grow-1">
+                        <div class="small text-muted">正在咨询商品：</div>
+                        <div class="fw-bold text-dark">{{ item.title }}</div>
+                    </div>
+                    <div class="text-danger fw-bold">¥{{ item.price }}</div>
+                </div>
+                {% endif %}
+
+                <div class="chat-history p-4 bg-light" style="height: 400px; overflow-y: auto;">
+                    {% if history_messages %}
+                        {% for msg in history_messages %}
+                            <div class="d-flex mb-3 {% if msg.sender == request.user %}justify-content-end{% else %}justify-content-start{% endif %}">
+                                {% if msg.sender != request.user %}
+                                <div class="me-2">
+                                    <img src="{{ msg.sender.profile.avatar.url }}" class="rounded-circle shadow-sm" style="width: 36px; height: 36px; object-fit: cover;">
+                                </div>
+                                {% endif %}
+
+                                <div style="max-width: 70%;">
+                                    <div class="p-2 px-3 rounded-3 shadow-sm {% if msg.sender == request.user %}bg-success text-white{% else %}bg-white text-dark border{% endif %}" style="word-wrap: break-word;">
+                                        {{ msg.content }}
+                                    </div>
+                                    <div class="small text-muted mt-1 {% if msg.sender == request.user %}text-end{% endif %}" style="font-size: 11px;">
+                                        {{ msg.created_at|date:"m-d H:i" }}
+                                    </div>
+                                </div>
+
+                                {% if msg.sender == request.user %}
+                                <div class="ms-2">
+                                    <img src="{{ request.user.profile.avatar.url }}" class="rounded-circle shadow-sm" style="width: 36px; height: 36px; object-fit: cover;">
+                                </div>
+                                {% endif %}
+                            </div>
+                        {% endfor %}
+                    {% else %}
+                        <div class="text-center text-muted py-5">
+                            <i class="bi bi-chat-square-heart display-4 mb-3 d-block text-secondary opacity-50"></i>
+                            <p>还没聊过天呢，打个招呼吧！</p>
+                        </div>
+                    {% endif %}
+                </div>
+
+                <div class="p-3 bg-white border-top">
+                    <form method="POST">
+                        {% csrf_token %}
+                        <div class="input-group">
+                            {{ form.content }} <button type="submit" class="btn btn-success px-4 fw-bold">发送</button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+    // 自动滚动到底部
+    document.addEventListener("DOMContentLoaded", function() {
+        var chatBox = document.querySelector('.chat-history');
+        if(chatBox) {
+            chatBox.scrollTop = chatBox.scrollHeight;
+        }
+    });
+</script>
+
+<style>
+    /* 简单美化输入框 */
+    #id_content {
+        class: "form-control";
+        border-radius: 0.375rem 0 0 0.375rem;
+        border: 1px solid #ced4da;
+        resize: none;
+        height: 50px;
+        padding: 10px;
+        width: 100%; /* 防止宽度问题 */
+        flex: 1 1 auto;
+    }
+    .input-group {
+        display: flex;
+        width: 100%;
+    }
+</style>
+{% endblock %}

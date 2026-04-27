@@ -1,0 +1,142 @@
+/* =========================================
+   1. 全局变量覆盖 (核心：把蓝色换成绿色)
+   ========================================= */
+:root {
+    /* 覆盖 Bootstrap 默认的蓝色主色调 */
+    --bs-primary: #198754;      /* 对应 btn-success */
+    --bs-primary-rgb: 25, 135, 84;
+    --bs-link-color: #198754;
+    --bs-link-hover-color: #146c43;
+
+    /* 定义更柔和的阴影 */
+    --card-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
+    --hover-shadow: 0 8px 24px rgba(0, 0, 0, 0.1);
+}
+
+body {
+    background-color: #f8f9fa; /* 统一浅灰背景，不刺眼 */
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+}
+
+/* =========================================
+   2. 输入框 & 表单聚焦效果 (去蓝变绿)
+   ========================================= */
+.form-control:focus,
+.form-select:focus,
+.form-check-input:focus {
+    border-color: #198754 !important;
+    /* 核心：把原本蓝色的光晕改成绿色半透明光晕 */
+    box-shadow: 0 0 0 0.25rem rgba(25, 135, 84, 0.15) !important;
+}
+
+/* 复选框选中颜色 */
+.form-check-input:checked {
+    background-color: #198754;
+    border-color: #198754;
+}
+
+/* =========================================
+   3. 链接 & 按钮交互
+   ========================================= */
+a {
+    color: #198754;
+    text-decoration: none;
+    transition: all 0.2s ease;
+}
+
+a:hover {
+    color: #0f5132; /* 深绿 */
+}
+
+/* 按钮点击后的聚焦圈也改绿 */
+.btn-success:focus, .btn-outline-success:focus {
+    box-shadow: 0 0 0 0.25rem rgba(25, 135, 84, 0.3) !important;
+}
+
+/* 修复导航栏汉堡菜单点击后的蓝色光圈 */
+.navbar-toggler:focus {
+    box-shadow: 0 0 0 0.25rem rgba(25, 135, 84, 0.15) !important;
+}
+
+/* 通用按钮悬停提升效果 */
+.btn {
+    transition: all 0.2s;
+}
+.btn:active {
+    transform: scale(0.98); /* 点击时微缩，更有按压感 */
+}
+
+/* =========================================
+   4. 卡片 & 容器美化
+   ========================================= */
+.card {
+    border: none;
+    box-shadow: var(--card-shadow);
+    transition: transform 0.2s, box-shadow 0.2s;
+}
+
+/* 只有带 .hover-card 类的卡片才有悬浮效果 */
+.hover-card:hover {
+    transform: translateY(-4px);
+    box-shadow: var(--hover-shadow);
+}
+
+/* =========================================
+   5. 图片上传区专用样式 (Item Form)
+   ========================================= */
+.upload-box {
+    transition: all 0.2s ease;
+    background-color: #fff;
+}
+.upload-box:hover {
+    border-color: #198754 !important;
+    background-color: #f0fff4 !important; /* 极淡的薄荷绿背景 */
+}
+.preview-img {
+    transition: opacity 0.2s;
+}
+
+/* =========================================
+   6. 滚动条美化 (Chrome/Edge/Safari)
+   ========================================= */
+::-webkit-scrollbar {
+    width: 8px;
+    height: 8px;
+}
+::-webkit-scrollbar-track {
+    background: #f1f1f1;
+}
+::-webkit-scrollbar-thumb {
+    background: #c1c1c1;
+    border-radius: 4px;
+}
+::-webkit-scrollbar-thumb:hover {
+    background: #198754; /* 滚动条悬停变绿 */
+}
+
+/* =========================================
+   7. 下拉菜单美化 (修复蓝色点击背景)
+   ========================================= */
+.dropdown-item {
+    transition: all 0.2s;
+    border-radius: 4px; /* 给选项加一点圆角 */
+    margin: 2px 0;      /* 给选项之间加一点间距 */
+}
+
+/* 鼠标悬停 & 点击激活时的样式：改为淡绿色背景 + 深绿字 */
+.dropdown-item:hover,
+.dropdown-item:focus,
+.dropdown-item:active,
+.dropdown-item.active {
+    background-color: #f0fff4 !important; /* 淡绿背景 */
+    color: #198754 !important;            /* 深绿文字 */
+}
+
+/* 专门针对“退出登录”等危险操作按钮 (text-danger) */
+/* 只有当 dropdown-item 同时也拥有 text-danger 类时生效 */
+.dropdown-item.text-danger:hover,
+.dropdown-item.text-danger:focus,
+.dropdown-item.text-danger:active {
+    background-color: #fef2f2 !important; /* 淡红背景 */
+    color: #dc3545 !important;            /* 深红文字 */
+}

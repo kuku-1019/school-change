@@ -1,0 +1,177 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}{{ item.title }} - 拾光校园{% endblock %}
+
+{% block content %}
+<div class="row">
+    <div class="col-md-8">
+        <div class="card shadow-sm border-0 rounded-3 mb-4 overflow-hidden">
+            <div id="itemCarousel" class="carousel slide bg-light" data-bs-ride="carousel">
+                <div class="carousel-inner">
+                    {% if item.images.exists %}
+                        {% for image in item.images.all %}
+                        <div class="carousel-item {% if forloop.first %}active{% endif %}">
+                            <div class="d-flex justify-content-center align-items-center" style="height: 400px; background-color: #f8f9fa;">
+                                <img src="{{ image.image.url }}" class="d-block" style="max-height: 100%; max-width: 100%;" alt="{{ item.title }}">
+                            </div>
+                        </div>
+                        {% endfor %}
+                    {% else %}
+                        <div class="carousel-item active">
+                            <div class="d-flex justify-content-center align-items-center" style="height: 400px; background-color: #f8f9fa;">
+                                <img src="{% static 'img/no-image.png' %}" class="d-block" style="max-height: 200px;" alt="无图片">
+                            </div>
+                        </div>
+                    {% endif %}
+                </div>
+                {% if item.images.count > 1 %}
+                <button class="carousel-control-prev" type="button" data-bs-target="#itemCarousel" data-bs-slide="prev">
+                    <span class="carousel-control-prev-icon bg-dark rounded-circle bg-opacity-25" aria-hidden="true"></span>
+                </button>
+                <button class="carousel-control-next" type="button" data-bs-target="#itemCarousel" data-bs-slide="next">
+                    <span class="carousel-control-next-icon bg-dark rounded-circle bg-opacity-25" aria-hidden="true"></span>
+                </button>
+                {% endif %}
+            </div>
+
+            <div class="card-body p-4">
+                <div class="d-flex justify-content-between align-items-start mb-3">
+                    <h3 class="fw-bold text-dark">{{ item.title }}</h3>
+                    {% if item.status == 'available' %}
+                        <span class="badge bg-success">可购买</span>
+                    {% elif item.status == 'sold' %}
+                        <span class="badge bg-secondary">已售出</span>
+                    {% endif %}
+                </div>
+
+                <h3 class="text-danger fw-bold mb-4">¥{{ item.price }}</h3>
+
+                <div class="bg-light p-3 rounded-3 mb-4">
+                    <p class="mb-0 text-secondary" style="white-space: pre-line;">{{ item.description }}</p>
+                </div>
+
+                <div class="row text-muted small">
+                    <div class="col-md-4"><i class="bi bi-grid me-1"></i>类别：{{ item.category.name }}</div>
+                    <div class="col-md-4"><i class="bi bi-star me-1"></i>成色：{{ item.condition }}</div>
+                    <div class="col-md-4"><i class="bi bi-clock me-1"></i>发布：{{ item.created_at|date:"Y-m-d" }}</div>
+                </div>
+
+                {% if user == item.seller %}
+                <hr>
+                <div class="d-flex justify-content-end gap-2">
+                    <a href="{% url 'edit_item' item.id %}" class="btn btn-outline-primary btn-sm">编辑</a>
+                    {% if item.status == 'available' %}
+                    <form method="POST" action="{% url 'mark_sold' item.id %}" class="d-inline">
+                        {% csrf_token %}
+                        <input type="hidden" name="status" value="sold">
+                        <button type="submit" class="btn btn-outline-secondary btn-sm">标记为已售出</button>
+                    </form>
+                    {% endif %}
+                    <a href="{% url 'delete_item' item.id %}" class="btn btn-outline-danger btn-sm">删除</a>
+                </div>
+                {% endif %}
+            </div>
+        </div>
+
+        </div>
+
+    <div class="col-md-4">
+        <div class="card shadow-sm border-0 rounded-3">
+            <div class="card-body text-center p-4">
+                <div class="mb-3">
+                    {% if item.seller.profile.avatar %}
+                    <img src="{{ item.seller.profile.avatar.url }}" class="rounded-circle shadow-sm" style="width: 80px; height: 80px; object-fit: cover;">
+                    {% else %}
+                    <img src="{% static 'img/default-avatar.png' %}" class="rounded-circle shadow-sm" style="width: 80px; height: 80px; object-fit: cover;">
+                    {% endif %}
+                </div>
+
+                <h5 class="fw-bold">{{ item.seller.username }}</h5>
+                <p class="text-muted small">信誉良好 · 实名认证</p>
+
+                <div class="d-grid gap-2 mt-4">
+    {% if user.is_authenticated and user != item.seller %}
+        {% if item.status == 'available' %}
+        <div class="d-flex gap-2"> <a href="{% url 'add_to_cart' item.id %}" class="btn btn-outline-danger flex-grow-1 fw-bold">
+                <i class="bi bi-cart-plus me-1"></i> 加入购物车
+            </a>
+            <a href="{% url 'buy_now' item.id %}" class="btn btn-danger flex-grow-1 fw-bold">
+                <i class="bi bi-lightning-charge-fill me-1"></i> 立即购买
+            </a>
+        </div>
+        <a href="{% url 'send_message_item' item.seller.id item.id %}" class="btn btn-outline-success">
+            <i class="bi bi-chat-text me-1"></i> 私信卖家
+        </a>
+        {% else %}
+        <button class="btn btn-secondary" disabled>商品{{ item.get_status_display }}</button>
+        {% endif %}
+    {% endif %}
+
+    <a href="{% url 'seller_shop' item.seller.id %}" class="btn btn-light text-secondary">
+        查看卖家其他商品 <i class="bi bi-chevron-right small"></i>
+    </a>
+</div>
+            </div>
+        </div>
+
+        <div class="alert alert-warning mt-3 small border-0 shadow-sm">
+            <i class="bi bi-shield-exclamation me-1"></i>
+            <strong>防骗提醒：</strong>
+            <br>请在校内公共场所交易，切勿私下通过第三方转账。
+        </div>
+    </div>
+</div>
+    <div class="row mt-4">
+    <div class="col-md-8">
+        <div class="card shadow-sm border-0 rounded-3">
+            <div class="card-header bg-white py-3">
+                <h5 class="mb-0 fw-bold">
+                    <i class="bi bi-chat-square-text me-2 text-success"></i>商品留言 ({{ item.comments.count }})
+                </h5>
+            </div>
+            <div class="card-body">
+
+                <div class="comment-list mb-4">
+                    {% for comment in item.comments.all %}
+                    <div class="d-flex mb-3 border-bottom pb-3">
+                        <div class="flex-shrink-0">
+                            <img src="{{ comment.author.profile.avatar.url }}" class="rounded-circle" style="width: 40px; height: 40px; object-fit: cover;">
+                        </div>
+                        <div class="flex-grow-1 ms-3">
+                            <div class="d-flex justify-content-between align-items-center mb-1">
+                                <h6 class="fw-bold mb-0">{{ comment.author.username }}</h6>
+                                <small class="text-muted">{{ comment.created_at|date:"Y-m-d H:i" }}</small>
+                            </div>
+                            <p class="mb-0 text-dark">{{ comment.content }}</p>
+                        </div>
+                    </div>
+                    {% empty %}
+                    <div class="text-center py-4 text-muted">
+                        <p>还没有人留言，快来抢沙发吧~</p>
+                    </div>
+                    {% endfor %}
+                </div>
+
+                {% if user.is_authenticated %}
+                <div class="bg-light p-3 rounded-3">
+                    <h6 class="fw-bold mb-3">发表提问</h6>
+                    <form action="{% url 'add_comment' item.id %}" method="POST">
+                        {% csrf_token %}
+                        <div class="mb-3">
+                            {{ comment_form.content }} </div>
+                        <div class="d-flex justify-content-end">
+                            <button type="submit" class="btn btn-success px-4">提交留言</button>
+                        </div>
+                    </form>
+                </div>
+                {% else %}
+                <div class="alert alert-warning text-center border-0">
+                    你需要 <a href="{% url 'login' %}?next={{ request.path }}" class="fw-bold text-dark">登录</a> 后才能留言
+                </div>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

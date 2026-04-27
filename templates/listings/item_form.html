@@ -1,0 +1,182 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}{{ title }} - 拾光校园{% endblock %}
+
+{% block content %}
+<div class="bg-light min-vh-100 py-5">
+    <div class="container">
+        <div class="row justify-content-center">
+            <div class="col-md-8 col-lg-6">
+
+                <div class="d-flex align-items-center mb-4">
+                    <a href="{% url 'my_items' %}" class="btn btn-sm btn-white border rounded-circle shadow-sm me-3" style="width: 40px; height: 40px; display: flex; align-items: center; justify-content: center;">
+                        <i class="bi bi-arrow-left text-dark"></i>
+                    </a>
+                    <h4 class="fw-bold mb-0 text-dark">{{ title }}</h4>
+                </div>
+
+                <div class="card border-0 shadow-sm rounded-4 overflow-hidden">
+                    <div class="card-body p-4 p-md-5 bg-white">
+                        <form method="POST" enctype="multipart/form-data" class="needs-validation" novalidate>
+                            {% csrf_token %}
+
+                            <div class="mb-5">
+                                <label class="form-label fw-bold text-dark mb-3">商品图片</label>
+                                <div class="text-muted small mb-3">最多上传 5 张，第一张作为封面</div>
+
+                                {{ formset.management_form }}
+
+                                <div class="row row-cols-3 g-3">
+                                    {% for form in formset %}
+                                    <div class="col">
+                                        <div class="upload-item position-relative">
+                                            {{ form.id }}
+                                            <div class="d-none">{{ form.image }}</div>
+
+                                            <label for="{{ form.image.id_for_label }}" class="d-block w-100 cursor-pointer">
+                                                <div class="ratio ratio-1x1 rounded-3 bg-light border-2 border-dashed position-relative upload-box overflow-hidden">
+
+                                                    <div class="d-flex flex-column align-items-center justify-content-center h-100 text-secondary placeholder-view"
+                                                         {% if form.instance.image %}style="display:none"{% endif %}>
+                                                        <i class="bi bi-camera fs-4 mb-1"></i>
+                                                        <span style="font-size: 12px;">添加</span>
+                                                    </div>
+
+                                                    <img src="{% if form.instance.image %}{{ form.instance.image.url }}{% endif %}"
+                                                         class="w-100 h-100 object-fit-cover preview-img"
+                                                         {% if not form.instance.image %}style="display:none"{% endif %}>
+                                                </div>
+                                            </label>
+
+                                            {% if form.instance.pk %}
+                                            <div class="position-absolute top-0 end-0 p-1">
+                                                 <div class="form-check bg-white rounded-circle shadow-sm p-0 d-flex align-items-center justify-content-center" style="width: 20px; height: 20px;">
+                                                    {{ form.DELETE }}
+                                                </div>
+                                            </div>
+                                            {% endif %}
+                                        </div>
+                                    </div>
+                                    {% endfor %}
+                                </div>
+                            </div>
+
+                            <div class="vstack gap-4">
+                                <div>
+                                    <label for="{{ form.title.id_for_label }}" class="form-label fw-bold text-dark">标题</label>
+                                    {{ form.title }}
+                                    </div>
+
+                                <div>
+                                    <label for="{{ form.description.id_for_label }}" class="form-label fw-bold text-dark">描述</label>
+                                    {{ form.description }}
+                                    <div class="form-text text-muted small">入手渠道、新旧程度、转手原因...</div>
+                                </div>
+
+                                <div>
+                                    <label for="{{ form.price.id_for_label }}" class="form-label fw-bold text-dark">价格</label>
+                                    <div class="input-group">
+                                        <span class="input-group-text bg-white border-end-0 fw-bold">¥</span>
+                                        {{ form.price }}
+                                    </div>
+                                    <div class="text-danger small mt-1">{{ form.price.errors }}</div>
+                                </div>
+
+                                <div>
+                                    <label for="{{ form.category.id_for_label }}" class="form-label fw-bold text-dark">分类</label>
+                                    {{ form.category }}
+                                </div>
+
+                                <div>
+                                    <label for="{{ form.condition.id_for_label }}" class="form-label fw-bold text-dark">成色</label>
+                                    {{ form.condition }}
+                                </div>
+                            </div>
+
+                            <div class="d-grid mt-5 pt-3">
+                                <button type="submit" class="btn btn-success btn-lg rounded-pill fw-bold shadow-sm py-3">
+                                    {% if '编辑' in title %}保存修改{% else %}立即发布{% endif %}
+                                </button>
+                                <a href="{% url 'my_items' %}" class="btn btn-link text-muted text-decoration-none mt-3">取消</a>
+                            </div>
+
+                        </form>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<style>
+    /* 极简风样式 */
+    .form-control, .form-select {
+        padding: 0.8rem 1rem; /* 加大内边距，更有质感 */
+        font-size: 1rem;
+        border: 1px solid #eee;
+        border-radius: 0.75rem; /* 更大的圆角 */
+        background-color: #fcfcfc;
+    }
+
+    .form-control:focus, .form-select:focus {
+        border-color: #198754;
+        background-color: #fff;
+        box-shadow: 0 0 0 4px rgba(25, 135, 84, 0.1);
+    }
+
+    textarea.form-control {
+        min-height: 120px;
+    }
+
+    .border-dashed {
+        border-style: dashed !important;
+        border-color: #e0e0e0 !important;
+    }
+
+    .upload-box {
+        transition: all 0.2s;
+        cursor: pointer;
+    }
+
+    .upload-box:hover {
+        border-color: #198754 !important;
+        background-color: #f0fff4 !important;
+    }
+
+    /* 隐藏原生 checkbox */
+    input[type="checkbox"][name$="-DELETE"] {
+        width: 14px; height: 14px; margin: 0; cursor: pointer;
+    }
+</style>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        const fileInputs = document.querySelectorAll('input[type="file"]');
+
+        fileInputs.forEach(input => {
+            input.addEventListener('change', function(e) {
+                const wrapper = this.closest('.upload-item');
+                const previewImg = wrapper.querySelector('.preview-img');
+                const placeholder = wrapper.querySelector('.placeholder-view');
+                const box = wrapper.querySelector('.upload-box');
+
+                if (this.files && this.files[0]) {
+                    const reader = new FileReader();
+                    reader.onload = function(evt) {
+                        previewImg.src = evt.target.result;
+                        previewImg.style.display = 'block';
+                        if(placeholder) placeholder.style.display = 'none';
+
+                        box.classList.remove('border-dashed');
+                        box.classList.add('border-success'); // 上传成功变绿框
+                    };
+                    reader.readAsDataURL(this.files[0]);
+                }
+            });
+        });
+    });
+</script>
+{% endblock %}

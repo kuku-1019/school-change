@@ -1,0 +1,132 @@
+{% extends 'base.html' %}
+
+{% block title %}拾光校园 - 首页{% endblock %}
+
+{% block content %}
+<div id="homeCarousel" class="carousel slide mb-5 rounded-3 overflow-hidden shadow" data-bs-ride="carousel">
+    <div class="carousel-indicators">
+        <button type="button" data-bs-target="#homeCarousel" data-bs-slide-to="0" class="active"></button>
+        <button type="button" data-bs-target="#homeCarousel" data-bs-slide-to="1"></button>
+    </div>
+    <div class="carousel-inner">
+        <div class="carousel-item active">
+            <img src="/static/img/banner/1.png" class="d-block w-100" style="height: 400px; object-fit: cover;" alt="Banner 1">
+            <div class="carousel-caption d-none d-md-block bg-dark bg-opacity-50 rounded">
+                <h5>让闲置流转起来</h5>
+                <p>环保、便捷的校园生活方式</p>
+            </div>
+        </div>
+        <div class="carousel-item">
+            <img src="/static/img/banner/2.png" class="d-block w-100" style="height: 400px; object-fit: cover;" alt="Banner 2">
+            <div class="carousel-caption d-none d-md-block bg-dark bg-opacity-50 rounded">
+                <h5>安全可靠的交易环境</h5>
+                <p>打造值得信赖的校内平台</p>
+            </div>
+        </div>
+    </div>
+    <button class="carousel-control-prev" type="button" data-bs-target="#homeCarousel" data-bs-slide="prev">
+        <span class="carousel-control-prev-icon"></span>
+    </button>
+    <button class="carousel-control-next" type="button" data-bs-target="#homeCarousel" data-bs-slide="next">
+        <span class="carousel-control-next-icon"></span>
+    </button>
+</div>
+
+<div class="row justify-content-center mb-5">
+    <div class="col-md-8">
+        <form action="{% url 'search_items' %}" method="GET">
+            <div class="input-group input-group-lg shadow-sm">
+                <input type="text" name="q" class="form-control border-success" placeholder="搜索你感兴趣的宝贝..." style="font-size: 1rem;">
+                <button class="btn btn-success px-5" type="submit">搜索</button>
+            </div>
+        </form>
+    </div>
+</div>
+
+<h2 class="mb-4 text-center fw-bold">商品分类</h2>
+<div class="row row-cols-2 row-cols-md-3 row-cols-lg-6 g-3 mb-5">
+    {% for category in categories %}
+    <div class="col">
+        <a href="{% url 'item_list_by_category' category.id %}" class="text-decoration-none text-dark">
+            <div class="card h-100 shadow-sm border-0 bg-light category-card text-center py-3">
+                <div class="card-body p-2">
+                    <h6 class="card-title mb-0">{{ category.name }}</h6>
+                </div>
+            </div>
+        </a>
+    </div>
+    {% endfor %}
+</div>
+
+<h2 class="mb-4">最新发布</h2>
+<div class="row row-cols-1 row-cols-md-4 g-4" id="item-container">
+    {% for item in recent_items %}
+    <div class="col">
+        <div class="card h-100 shadow-sm border-0 hover-shadow">
+            {% if item.images.first %}
+            <img src="{{ item.images.first.image.url }}" class="card-img-top" style="height: 200px; object-fit: cover;" alt="{{ item.title }}">
+            {% else %}
+            <img src="/static/img/no-image.png" class="card-img-top" style="height: 200px; object-fit: cover;" alt="无图片">
+            {% endif %}
+            <div class="card-body">
+                <h5 class="card-title text-truncate">{{ item.title }}</h5>
+                <p class="card-text text-danger fw-bold">¥{{ item.price }}</p>
+                <p class="card-text small text-muted">{{ item.description|truncatechars:40 }}</p>
+            </div>
+            <div class="card-footer bg-white border-0 d-flex justify-content-between align-items-center pb-3">
+                <small class="text-muted">{{ item.created_at|date:"m-d" }}</small>
+                <a href="{% url 'item_detail' item.id %}" class="btn btn-sm btn-outline-success rounded-pill px-3">详情</a>
+            </div>
+        </div>
+    </div>
+    {% endfor %}
+</div>
+
+<div class="text-center mt-5 mb-5">
+    <button id="loadMoreBtn" class="btn btn-outline-dark rounded-pill px-5 py-2">查看更多商品</button>
+</div>
+
+{% endblock %}
+
+{% block extra_js %}
+<script>
+    let offset = 8; // 初始已有8个
+    const loadMoreBtn = document.getElementById('loadMoreBtn');
+
+    loadMoreBtn.addEventListener('click', function() {
+        fetch(`/listings/api/load-more/?offset=${offset}`)
+            .then(response => response.json())
+            .then(data => {
+                const container = document.getElementById('item-container');
+
+                if (data.items.length === 0) {
+                    loadMoreBtn.textContent = "没有更多商品了";
+                    loadMoreBtn.disabled = true;
+                    return;
+                }
+
+                data.items.forEach(item => {
+                    const html = `
+                    <div class="col">
+                        <div class="card h-100 shadow-sm border-0 hover-shadow">
+                            <img src="${item.image_url}" class="card-img-top" style="height: 200px; object-fit: cover;">
+                            <div class="card-body">
+                                <h5 class="card-title text-truncate">${item.title}</h5>
+                                <p class="card-text text-danger fw-bold">¥${item.price}</p>
+                                <p class="card-text small text-muted">${item.description.substring(0, 40)}...</p>
+                            </div>
+                            <div class="card-footer bg-white border-0 d-flex justify-content-between align-items-center pb-3">
+                                <small class="text-muted">${item.created_at.slice(5)}</small>
+                                <a href="/listings/item/${item.id}/" class="btn btn-sm btn-outline-success rounded-pill px-3">详情</a>
+                            </div>
+                        </div>
+                    </div>`;
+                    container.insertAdjacentHTML('beforeend', html);
+                });
+
+                offset += data.items.length;
+            })
+            .catch(error => console.error('Error:', error));
+    });
+</script>
+{% endblock %}
